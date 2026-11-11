@@ -67,17 +67,38 @@ const byCat=cat=>BANK.map((q,i)=>({...q,id:i})).filter(q=>cat==='Wszystkie'||q.c
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 function navigate(page){state.page=page;saved.lastPage=page;persist();render();window.scrollTo({top:0,behavior:'smooth'})}
 
+const RETURN_VISITOR_KEY='pifpaf-visited-v1';
+let wasPreviouslyOpened=false;
+try{wasPreviouslyOpened=localStorage.getItem(RETURN_VISITOR_KEY)==='1';localStorage.setItem(RETURN_VISITOR_KEY,'1')}catch(e){}
+let appWasHiddenAt=0,returnPromptOpenedOnResume=false;
+function hasLiveExam(){return state.page==='exam'&&state.examIds.length>0&&!state.examDone}
+function showReturnWhenResumed(){
+ if(document.visibilityState!=='visible')return;
+ if(document.getElementById('return-overlay')||hasLiveExam())return;
+ if(!wasPreviouslyOpened&&!userHasLearningProgress())return;
+ openReturnPrompt();
+}
+function trackAppResume(){
+ document.addEventListener('visibilitychange',()=>{
+   if(document.visibilityState==='hidden'){appWasHiddenAt=Date.now();returnPromptOpenedOnResume=false;return}
+   if(document.visibilityState==='visible'&&appWasHiddenAt&&Date.now()-appWasHiddenAt>4000&&!returnPromptOpenedOnResume){
+     returnPromptOpenedOnResume=true;showReturnWhenResumed();
+   }
+ });
+ window.addEventListener('pageshow',event=>{if(event.persisted)showReturnWhenResumed()});
+}
+
 function userHasLearningProgress(){return Boolean(
 (saved.attempts||[]).length||(saved.seen||[]).length||(saved.seenKeys||[]).length||
 (saved.mistakes||[]).length||Object.keys(saved.reviews||{}).length||
 Object.values(saved.examUsed||{}).some(byCat=>Object.values(byCat||{}).some(a=>Array.isArray(a)&&a.length))
 )}
 function openReturnPrompt(){
- if(!userHasLearningProgress())return;
+ if(document.getElementById('return-overlay')||(!wasPreviouslyOpened&&!userHasLearningProgress()))return;
  const overlay=document.createElement('div');overlay.id='return-overlay';overlay.className='return-overlay';
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','return-title');
  const exams=(saved.attempts||[]).length,done=(saved.seenKeys||saved.seen||[]).length;
- overlay.innerHTML='<section class="return-dialog"><img class="return-symbol" src="./apple-touch-icon.png?v=2" alt=""><h2 id="return-title">Witaj ponownie w PifPaf!</h2><p>Masz zapisane postępy: <b>'+done+' poznanych pytań</b> i <b>'+exams+' ukończonych testów</b>.</p><p>Co chcesz teraz zrobić?</p><div class="return-actions"><button class="btn primary" type="button" id="return-continue">Kontynuuj naukę</button><button class="btn" type="button" id="return-restart">Rozpocznij od nowa</button></div><p class="return-note">Twoje wyniki zapisane są w tej przeglądarce. Rozpoczęcie od nowa usunie lokalne postępy.</p></section>';
+ overlay.innerHTML='<section class="return-dialog"><img class="return-symbol" src="./apple-touch-icon.png?v=2" alt=""><h2 id="return-title">Witaj ponownie w PifPaf!</h2><p>'+(userHasLearningProgress()?'Masz zapisane postępy: <b>'+done+' poznanych pytań</b> i <b>'+exams+' ukończonych testów</b>.':'Witaj ponownie! Możesz kontynuować korzystanie z kursu lub rozpocząć nową naukę.')+'</p><p>Co chcesz teraz zrobić?</p><div class="return-actions"><button class="btn primary" type="button" id="return-continue">Kontynuuj naukę</button><button class="btn" type="button" id="return-restart">Rozpocznij od nowa</button></div><p class="return-note">Twoje wyniki zapisane są w tej przeglądarce. Rozpoczęcie od nowa usunie lokalne postępy.</p></section>';
  document.body.appendChild(overlay);
  function closePrompt(){overlay.remove()}
  const continueBtn=document.getElementById('return-continue'),resetBtn=document.getElementById('return-restart');
@@ -147,5 +168,5 @@ function stats(){const a=saved.attempts||[],r=readinessDetails(),catStats=progre
 shell('<section class="panel"><h2>Gotowość do części teoretycznej PZSS</h2><div class="top"><div><div class="big">'+r.score+'%</div><b>'+(r.ready?'Wysoka gotowość według przyjętych kryteriów':'Kontynuuj przygotowania')+'</b><p class="stat-note">To orientacyjny wskaźnik nauki, nie prognoza wyniku egzaminu ani ocena części praktycznej.</p></div></div><div class="readiness-track"><div style="width:'+r.score+'%"></div></div><div class="grid" style="margin-top:14px"><div class="stat"><span class="label">Symulacje PZSS w ostatniej piątce</span><b>'+r.examPasses+'/'+r.recent+'</b>Zaliczonych</div><div class="stat"><span class="label">Średnia ostatnich 5 symulacji</span><b>'+r.avg+'%</b>Tylko tryb PZSS</div><div class="stat"><span class="label">Pokrycie bazy</span><b>'+r.allCovered+'%</b>'+seen+' z '+BANK.length+' pytań</div><div class="stat"><span class="label">Bezpieczeństwo</span><b>'+(r.safetyAcc===null?'—':r.safetyAcc+'%')+'</b>'+(r.safetyAcc===null?'Wymaga min. 10 odpowiedzi':'Z całej historii odpowiedzi')+'</div></div><p class="note">Status wysokiej gotowości wymaga 5 ostatnich zaliczonych symulacji, poznania co najmniej 80% pytań i co najmniej 95% skuteczności z bezpieczeństwa przy minimum 10 odpowiedziach.</p></section><section class="panel"><h2>Wyniki testów w czasie</h2>'+graphOfExamHistory(a)+'</section><section class="panel"><h2>Skuteczność według kategorii</h2><div class="category-bars">'+KEYS.map(cat=>{const c=catStats[cat],p=c&&c.answered?pct(c.correct/c.answered*100):0;return '<div><div class="category-bar-head"><span>'+esc(cat)+'</span><span>'+(c&&c.answered?p+'% ('+c.correct+'/'+c.answered+')':'Brak wyników')+'</span></div><div class="category-bar"><div style="width:'+p+'%"></div></div></div>'}).join('')+'</div><p class="stat-note">Zliczane są odpowiedzi z pytań treningowych i ukończonych testów. Starsze testy bez szczegółów kategorii nie są uwzględniane w podziale.</p></section><section class="panel"><h2>Historia testów</h2><div class="sr-meter"><div class="stat"><span class="label">Ukończone testy</span><b>'+a.length+'</b></div><div class="stat"><span class="label">Zaliczone symulacje</span><b>'+a.filter(x=>x.passed===true).length+'</b></div><div class="stat"><span class="label">Fiszki do powtórki</span><b>'+reviewCounts().due+'</b></div></div>'+(a.length?'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;margin-top:14px"><thead><tr><th align="left">Data</th><th>Tryb</th><th>Wynik</th><th>Czas</th><th>Ocena</th></tr></thead><tbody>'+a.slice(-30).reverse().map(x=>'<tr><td style="padding:9px 4px;border-bottom:1px solid #35485f">'+new Date(x.date).toLocaleDateString('pl-PL')+'</td><td align="center">'+(x.mode==='training'?'20 pytań':'PZSS')+'</td><td align="center">'+x.score+'/'+(x.total||10)+'</td><td align="center">'+(x.durationSeconds!=null?Math.max(1,Math.ceil(x.durationSeconds/60))+' min':'—')+'</td><td align="center">'+(x.mode==='training'?'Trening':x.passed?'Zdany':'Niezdany')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted">Brak historii egzaminów na tym urządzeniu.</p>')+'<div class="actions"><button class="btn" id="repeat-errors">Powtórz błędy</button><button class="btn" id="reset">Usuń postępy na tym urządzeniu</button></div></section>');
 document.getElementById('repeat-errors').onclick=()=>beginStudy('Tylko błędne');document.getElementById('reset').onclick=()=>{if(confirm('Na pewno usunąć lokalne wyniki egzaminów, historię odpowiedzi i harmonogram fiszek?')){saved={};state.flashIds=[];persist();stats()}}}
 
-function render(){document.body.classList.toggle('compact',state.page!=='start');if(state.page==='start')start();else if(state.page==='lessons')lessons();else if(state.page==='study')study();else if(state.page==='exam')exam();else if(state.page==='flash')flash();else if(state.page==='build')build();else if(state.page==='stats')stats()};migrateOldProgress();render();initAnalytics();openReturnPrompt();
+function render(){document.body.classList.toggle('compact',state.page!=='start');if(state.page==='start')start();else if(state.page==='lessons')lessons();else if(state.page==='study')study();else if(state.page==='exam')exam();else if(state.page==='flash')flash();else if(state.page==='build')build();else if(state.page==='stats')stats()};migrateOldProgress();render();initAnalytics();trackAppResume();openReturnPrompt();
 </script></body></html>
