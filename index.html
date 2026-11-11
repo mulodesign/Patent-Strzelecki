@@ -74,7 +74,7 @@ let appWasHiddenAt=0,lastReturnPromptAt=0;
 function isStandaloneApp(){try{return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}catch(e){return false}}
 function showReturnWhenResumed(){
  if(document.visibilityState==='hidden'||document.getElementById('return-overlay'))return;
- if(!wasPreviouslyOpened&&!userHasLearningProgress()&&!isStandaloneApp())return;
+ if(!wasPreviouslyOpened&&!userHasLearningProgress())return;
  if(Date.now()-lastReturnPromptAt<2500)return;
  openReturnPrompt(true);
 }
@@ -93,7 +93,7 @@ function userHasLearningProgress(){return Boolean(
 Object.values(saved.examUsed||{}).some(byCat=>Object.values(byCat||{}).some(a=>Array.isArray(a)&&a.length))
 )}
 function openReturnPrompt(force=false){
- if(document.getElementById('return-overlay')||(!force&&!wasPreviouslyOpened&&!userHasLearningProgress()&&!isStandaloneApp()))return;
+ if(document.getElementById('return-overlay')||(!force&&!wasPreviouslyOpened&&!userHasLearningProgress()))return;
  lastReturnPromptAt=Date.now();
  const overlay=document.createElement('div');overlay.id='return-overlay';overlay.className='return-overlay';
  overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','return-title');
