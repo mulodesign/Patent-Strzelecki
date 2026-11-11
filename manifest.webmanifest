@@ -1,0 +1,19 @@
+{
+  "name": "Patent Strzelecki – kurs i testy",
+  "short_name": "Patent Strzelecki",
+  "description": "Niezależny interaktywny kurs przygotowujący do egzaminu na patent strzelecki. Lekcje, fiszki, egzaminy i statystyki.",
+  "lang": "pl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d1522",
+  "theme_color": "#121f30",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
