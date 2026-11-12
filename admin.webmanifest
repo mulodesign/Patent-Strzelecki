@@ -1,0 +1,25 @@
+{
+  "name": "PifPaf ADMIN — panel administratora",
+  "short_name": "PifPaf ADMIN",
+  "description": "Prywatny panel statystyk i wiadomości PifPaf.",
+  "start_url": "./admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#091524",
+  "theme_color": "#09182c",
+  "lang": "pl",
+  "icons": [
+    {
+      "src": "./admin-icon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./admin-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
