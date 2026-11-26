@@ -1,0 +1,12 @@
+{
+  "name": "pifpaf-patent-strzelecki",
+  "private": true,
+  "type": "module",
+  "description": "PifPaf – narzędzia deweloperskie (kontrola bazy, testy). Aplikacja nie ma build-stepu ani zależności.",
+  "scripts": {
+    "check": "node tools/check_bank.mjs",
+    "check:baseline": "node tools/check_bank.mjs --baseline",
+    "check:links": "node tools/check_bank.mjs --links",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

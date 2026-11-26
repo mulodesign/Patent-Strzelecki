@@ -1,0 +1,26 @@
+name: Kontrola bazy pytań
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bank-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Kontrola bazy (błędy blokują, ostrzeżenia tylko raport)
+        run: node tools/check_bank.mjs
+      - name: Liczby kontrolne (baseline)
+        run: node tools/check_bank.mjs --baseline
+      - name: Testy (migracja, generator, UX)
+        run: node --test tests/*.test.mjs
