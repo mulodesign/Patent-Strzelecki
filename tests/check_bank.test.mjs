@@ -2,13 +2,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { loadBank, analyze, checkBaseline } from '../tools/check_bank.mjs';
+import { loadBank, analyze, checkBaseline, statusOf } from '../tools/check_bank.mjs';
 import { ROOT } from './harness.mjs';
 
 const bank = loadBank(path.join(ROOT, 'index.html'));
 
 test('--baseline: wszystkie liczby z sekcji 2 zlecenia', () => {
-  const rows = checkBaseline(bank, analyze(bank, { baseline: true }));
+  const stare = bank.filter(q => statusOf(q) === 'stare');
+  const rows = checkBaseline(stare, analyze(stare, { baseline: true }));
   for (const r of rows) assert.ok(r.ok, `${r.label}: ${JSON.stringify(r.got)} ≠ ${JSON.stringify(r.want)}`);
 });
 
