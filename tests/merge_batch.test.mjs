@@ -9,7 +9,7 @@ import { ROOT } from './harness.mjs';
 
 const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const bank = loadBank(path.join(ROOT, 'index.html'));
-const batch = bank.filter(q => q.status === 'nowe');                 // partia batch-01 w postaci z bazy
+const batch = bank.filter(q => q.id.startsWith('B01-'));            // partia batch-01 w postaci z bazy
 const oldOnly = bank.filter(q => q.status !== 'nowe').map(({ status, ...q }) => q);
 const lit = extractArrayLiteral(html, 'const BANK=');
 const htmlBefore = html.replace(lit, JSON.stringify(oldOnly));        // baza sprzed wczytania partii
@@ -62,4 +62,14 @@ test('ponowne wczytanie tej samej partii jest odrzucane (duplikaty id)', () => {
   const r = mergeBatch({ html, batch: clone(batch) });
   assert.equal(r.ok, false);
   assert.ok(r.problems.filter(p => /już istnieje w bazie/.test(p)).length === 35);
+});
+
+test('plik stems może nadpisać topic (decyzja czatu: rozdzielenie B01-033..035)', () => {
+  const b = clone(batch).map(q => (q.id.startsWith('B01-03') && +q.id.slice(-3) >= 33 ? { ...q, topic: 'kary w ustawie' } : q));
+  const stems = { 'B01-033': { stem: 128, pewnosc: 'wysoka', topic: 'porzucenie broni (art. 50)' } };
+  const r = mergeBatch({ html: htmlBefore, batch: b, stems });
+  assert.ok(r.ok);
+  const after = JSON.parse(extractArrayLiteral(r.html, 'const BANK='));
+  assert.equal(after.find(q => q.id === 'B01-033').topic, 'porzucenie broni (art. 50)');
+  assert.equal(after.find(q => q.id === 'B01-034').topic, 'kary w ustawie');
 });

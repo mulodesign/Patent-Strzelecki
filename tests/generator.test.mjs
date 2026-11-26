@@ -42,8 +42,9 @@ for (const [mode, per] of [['pzss', 2], ['training', 4]]) {
         if (q.cat === 'Prawo karne') pkNowe.set(q.status, (pkNowe.get(q.status) || 0) + 1);
       }
     }
-    // Prawo karne: 3 nowe pytania o wspólnym topic → w teście najwyżej 1 nowe, reszta ze „stare”
-    assert.equal(pkNowe.get('nowe'), 1000, 'w każdym teście dokładnie jedno nowe pytanie z Prawa karnego');
+    // Prawo karne: liczba „nowe” w dziale wg puli (po batch-01: 3 pytania o różnych topic) – zawsze min(per, pula nowych)
+    const pkPool = app.run(`byCat('Prawo karne').filter(q=>statusOf(q)==='nowe').length`);
+    assert.equal(pkNowe.get('nowe'), 1000 * Math.min(per, pkPool), 'Prawo karne: nowe pytania mają pierwszeństwo');
   });
 
   test(`${mode}: w pierwszym cyklu każdej grupy (dział + status) pytania się nie powtarzają – 100 niezależnych startów`, () => {

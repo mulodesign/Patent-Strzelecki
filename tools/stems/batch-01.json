@@ -1,5 +1,5 @@
 {
-  "_opis": "Mapowanie id -> numer hasła z wykazu PZSS (1–142). Tylko numery, bez treści haseł. Pewność niska = null (do decyzji czatu). Szczegóły: OD_CLAUDE/pifpaf/mapowanie_batch-01.md",
+  "_opis": "Mapowanie id -> numer hasła z wykazu PZSS (1–142). Tylko numery, bez treści haseł. Pewność niska = null (do decyzji czatu). Szczegóły: OD_CLAUDE/pifpaf/mapowanie_batch-01.md. Pole topic (opcjonalne) nadpisuje topic z partii – decyzja czatu 26.11.2026 (rozdzielenie B01-033..035).",
   "B01-001": {"stem": 12, "pewnosc": "srednia"},
   "B01-002": {"stem": 11, "pewnosc": "srednia"},
   "B01-003": {"stem": 54, "pewnosc": "srednia"},
@@ -32,7 +32,7 @@
   "B01-030": {"stem": null, "pewnosc": "niska", "kandydat": 31},
   "B01-031": {"stem": null, "pewnosc": "niska", "kandydat": 17},
   "B01-032": {"stem": null, "pewnosc": "niska", "kandydat": null},
-  "B01-033": {"stem": 128, "pewnosc": "wysoka"},
-  "B01-034": {"stem": 127, "pewnosc": "wysoka"},
-  "B01-035": {"stem": 130, "pewnosc": "wysoka"}
+  "B01-033": {"stem": 128, "pewnosc": "wysoka", "topic": "porzucenie broni (art. 50)"},
+  "B01-034": {"stem": 127, "pewnosc": "wysoka", "topic": "noszenie po alkoholu (art. 51 ust. 2 pkt 4)"},
+  "B01-035": {"stem": 130, "pewnosc": "wysoka", "topic": "broń pneumatyczna bez rejestracji (art. 51 ust. 1)"}
 }

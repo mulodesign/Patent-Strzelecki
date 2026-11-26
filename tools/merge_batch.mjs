@@ -46,7 +46,7 @@ export function mergeBatch({ html, batch, stems = null }) {
     const s = stems && stems[q.id];
     const stem = s && s.stem != null && ['wysoka', 'srednia'].includes(s.pewnosc) ? s.stem : q.stem;
     if (stem !== q.stem) applied.push(q.id);
-    const rec = { ...q, stem };
+    const rec = { ...q, stem, ...(s && typeof s.topic === 'string' && s.topic.trim() ? { topic: s.topic } : {}) };
     return Object.fromEntries(V2_FIELDS.map(f => [f, rec[f]]));
   });
   const finalBank = [...merged.slice(0, bank.length), ...out];

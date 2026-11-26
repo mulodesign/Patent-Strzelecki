@@ -39,6 +39,10 @@ export const BASELINE = {
   },
 };
 
+// Adresy src zmienione świadomie po v1 (Etap B, decyzja czatu 26.11.2026): stary plik → aktualny tekst jednolity.
+// --baseline liczy je jako ten sam adres, żeby liczby kontrolne v1 nadal były sprawdzalne.
+export const SRC_RENAMED = { 'regulamin-patent-strzelecki-2025.pdf': 'regulamin-patentowy-tekst-jednolity-uchw-47.pdf' };
+
 /* ---------- wczytanie ---------- */
 export function extractArrayLiteral(text, marker) {
   const at = text.indexOf(marker);
@@ -216,7 +220,8 @@ export function checkBaseline(bank, r) {
   eq('udział ściśle najdłuższej', pctS(all.strictly, all.noTie), '63,9%');
   eq('różne adresy src', r.srcCount.size, BASELINE.distinctSrcUrls);
   for (const [frag, want] of Object.entries(BASELINE.srcCounts)) {
-    const got = [...r.srcCount.entries()].filter(([u]) => u.endsWith(frag)).reduce((n, [, c]) => n + c, 0);
+    const names = [frag, ...(SRC_RENAMED[frag] ? [SRC_RENAMED[frag]] : [])];
+    const got = [...r.srcCount.entries()].filter(([u]) => names.some(f => u.endsWith(f))).reduce((n, [, c]) => n + c, 0);
     eq(`src …/${frag}`, got, want);
   }
   return rows;
