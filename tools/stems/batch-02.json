@@ -1,0 +1,119 @@
+{
+ "_opis": "Mapowanie id -> numer hasła wykazu PZSS. Zgodnie z decyzją czatu 26.11.2026 wpisywane tylko przy pewności wysokiej; pozostałe null.  Szczegóły: OD_CLAUDE/pifpaf/mapowanie_batch-02-03.md",
+ "B02-001": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-002": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-003": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-004": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-005": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-006": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-007": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-008": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-009": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-010": {
+  "stem": 73,
+  "pewnosc": "wysoka"
+ },
+ "B02-011": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-012": {
+  "stem": 69,
+  "pewnosc": "wysoka"
+ },
+ "B02-013": {
+  "stem": 69,
+  "pewnosc": "wysoka"
+ },
+ "B02-014": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-015": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-016": {
+  "stem": 76,
+  "pewnosc": "wysoka"
+ },
+ "B02-017": {
+  "stem": 68,
+  "pewnosc": "wysoka"
+ },
+ "B02-018": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-019": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-020": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-021": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-022": {
+  "stem": 74,
+  "pewnosc": "wysoka"
+ },
+ "B02-023": {
+  "stem": 75,
+  "pewnosc": "wysoka"
+ },
+ "B02-024": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-025": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-026": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-027": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-028": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B02-029": {
+  "stem": 68,
+  "pewnosc": "wysoka"
+ }
+}

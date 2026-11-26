@@ -18,8 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Kontrola bazy (błędy blokują, ostrzeżenia tylko raport)
-        run: node tools/check_bank.mjs
+      - name: Kontrola bazy (błędy i bramka B3 dla pytań „nowe” blokują)
+        run: node tools/check_bank.mjs --gate
       - name: Liczby kontrolne (baseline)
         run: node tools/check_bank.mjs --baseline
       - name: Testy (migracja, generator, UX)

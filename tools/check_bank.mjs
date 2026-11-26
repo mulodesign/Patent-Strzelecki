@@ -3,7 +3,8 @@
 //
 //   node tools/check_bank.mjs                 – pełny raport; kod wyjścia 1 przy błędach
 //   node tools/check_bank.mjs --baseline      – porównanie z liczbami kontrolnymi (stan v1, 26.11.2026)
-//   node tools/check_bank.mjs --strict        – ostrzeżenia z progami też blokują (Etap B)
+//   node tools/check_bank.mjs --strict        – wszystkie ostrzeżenia blokują
+//   node tools/check_bank.mjs --gate          – progi B3 dla pytań „nowe” blokują (Etap B)
 //   node tools/check_bank.mjs --links         – sprawdzenie źródeł przez HTTP (ręcznie, nieblokujące)
 //   node tools/check_bank.mjs --file X.json   – inny plik (tablica pytań w JSON albo index.html)
 
@@ -37,6 +38,10 @@ export const BASELINE = {
     'pytania-egzaminacyjne-na-patent-strzelcki-1.pdf': 36,
   },
 };
+
+// Adresy src zmienione świadomie po v1 (Etap B, decyzja czatu 26.11.2026): stary plik → aktualny tekst jednolity.
+// --baseline liczy je jako ten sam adres, żeby liczby kontrolne v1 nadal były sprawdzalne.
+export const SRC_RENAMED = { 'regulamin-patent-strzelecki-2025.pdf': 'regulamin-patentowy-tekst-jednolity-uchw-47.pdf' };
 
 /* ---------- wczytanie ---------- */
 export function extractArrayLiteral(text, marker) {
@@ -136,7 +141,7 @@ export function analyze(bank, { baseline = false } = {}) {
     const { ratio } = lengthStats(q);
     if (ratio !== null && ratio > THRESHOLDS.lengthRatioMax) ratioList.push(`${w} (${ratio.toFixed(2).replace('.', ',')})`);
     if (!String(q.art || '').trim()) noArt.push(w);
-    if (!/\bart\.|§|\bust\.|\bpkt\b|rozdz|\bpar\./i.test(String(q.src || '').replace(/https?:\/\/\S+/g, ''))) noProvision.push(w);
+    if (!String(q.art || '').trim() && !/\bart\.|§|\bust\.|\bpkt\b|rozdz|\bpar\./i.test(String(q.src || '').replace(/https?:\/\/\S+/g, ''))) noProvision.push(w);
     if (q.stem === null || q.stem === undefined || q.stem === '') noStem.push(w);
   });
   if (ratioList.length) warnings.push(`stosunek najdłuższej do najkrótszej opcji > 1,8 w ${ratioList.length} pytaniach: ${ratioList.join(', ')}`);
@@ -215,10 +220,69 @@ export function checkBaseline(bank, r) {
   eq('udział ściśle najdłuższej', pctS(all.strictly, all.noTie), '63,9%');
   eq('różne adresy src', r.srcCount.size, BASELINE.distinctSrcUrls);
   for (const [frag, want] of Object.entries(BASELINE.srcCounts)) {
-    const got = [...r.srcCount.entries()].filter(([u]) => u.endsWith(frag)).reduce((n, [, c]) => n + c, 0);
+    const names = [frag, ...(SRC_RENAMED[frag] ? [SRC_RENAMED[frag]] : [])];
+    const got = [...r.srcCount.entries()].filter(([u]) => names.some(f => u.endsWith(f))).reduce((n, [, c]) => n + c, 0);
     eq(`src …/${frag}`, got, want);
   }
   return rows;
+}
+
+/* ---------- Etap B: schemat v2 i bramka jakości dla pytań „nowe” ---------- */
+export const V2_FIELDS = ['id', 'stem', 'topic', 'variant', 'cat', 'diff', 'q', 'options', 'answer', 'art', 'why', 'src', 'status'];
+export const statusOf = q => q.status || 'stare';
+
+// Schemat rekordu wg DO_CLAUDE/pifpaf/STANDARD_PYTAN.md §5 (partie od czatu).
+export function validateV2Record(q, i = 0) {
+  const w = q && q.id ? q.id : `#${i + 1}`, e = [];
+  if (!q || typeof q !== 'object' || Array.isArray(q)) return [`${w}: rekord nie jest obiektem`];
+  for (const f of V2_FIELDS) if (!(f in q)) e.push(`${w}: brak pola ${f}`);
+  for (const f of Object.keys(q)) if (!V2_FIELDS.includes(f)) e.push(`${w}: nieznane pole ${f}`);
+  if (typeof q.id !== 'string' || !/^B\d{2}-\d{3}$/.test(q.id)) e.push(`${w}: id poza wzorcem Bnn-nnn`);
+  if (q.stem !== null && !(Number.isInteger(q.stem) && q.stem >= 1 && q.stem <= 142)) e.push(`${w}: stem poza 1–142 i nie null`);
+  if (typeof q.topic !== 'string' || !q.topic.trim()) e.push(`${w}: puste topic`);
+  if (!Number.isInteger(q.variant) || q.variant < 1) e.push(`${w}: variant nie jest liczbą ≥ 1`);
+  if (![1, 2, 3].includes(q.diff)) e.push(`${w}: diff poza 1–3`);
+  if (!Array.isArray(q.options) || q.options.length !== 3) e.push(`${w}: liczba opcji ≠ 3`);
+  if (!String(q.art || '').trim()) e.push(`${w}: brak art`);
+  if (!String(q.why || '').trim()) e.push(`${w}: brak why`);
+  if (!String(q.src || '').trim()) e.push(`${w}: brak src`);
+  if (q.status !== 'nowe') e.push(`${w}: status ≠ „nowe”`);
+  return e;
+}
+
+// Progi blokujące z Etapu B (B3) liczone dla zestawu pytań „nowe” (partii albo całej puli nowych).
+export function gateNew(qs) {
+  const fails = [];
+  const r = analyze(qs);
+  fails.push(...r.errors);
+  qs.forEach((q, i) => {
+    const w = q.id || `#${i + 1}`;
+    if (!String(q.art || '').trim()) fails.push(`${w}: brak art`);
+    if (!String(q.why || '').trim()) fails.push(`${w}: brak why`);
+    if (!String(q.src || '').trim()) fails.push(`${w}: brak src`);
+  });
+  const m = r.metrics['Cała baza'];
+  if (m.n && m.clearly / m.n > THRESHOLDS.clearlyLongestMaxShare)
+    fails.push(`poprawna „wyraźnie najdłuższa” w ${m.clearly}/${m.n} = ${pctS(m.clearly, m.n)} (próg ≤ 25%)`);
+  if (m.n >= THRESHOLDS.positionMinCount) m.positions.forEach((c, p) => {
+    const sh = c / m.n;
+    if (sh < THRESHOLDS.positionMin || sh > THRESHOLDS.positionMax) fails.push(`położenie poprawnej ${'ABC'[p]}: ${c}/${m.n} = ${pctS(c, m.n)} (przedział 28–38%)`);
+  });
+  if (r.ratioList.length) fails.push(`stosunek długości opcji > 1,8: ${r.ratioList.join(', ')}`);
+  return { ok: fails.length === 0, fails, metrics: m, analysis: r };
+}
+
+export function formatGate(g, label = 'nowe') {
+  const m = g.metrics;
+  return [
+    `BRAMKA JAKOŚCI (Etap B, B3) – pytania „${label}”: ${m.n}`,
+    `  położenie A/B/C: ${m.positions.join(' / ')} (${m.positions.map(c => pctS(c, m.n)).join(' / ')}) – próg 28–38%${m.n < THRESHOLDS.positionMinCount ? ' (nieoceniane: < 30 pytań)' : ''}`,
+    `  wyraźnie najdłuższa: ${m.clearly}/${m.n} = ${pctS(m.clearly, m.n)} – próg ≤ 25%`,
+    `  ściśle najdłuższa (informacyjnie): ${m.strictly}/${m.noTie} = ${pctS(m.strictly, m.noTie)} – cel < 45%`,
+    `  stosunek długości > 1,8: ${g.analysis.ratioList.length} pytań`,
+    ...g.fails.map(f => '  ✗ ' + f),
+    `WYNIK: bramka_${label}=${g.ok ? 'tak' : 'nie'}`,
+  ].join('\n');
 }
 
 async function checkLinks(r) {
@@ -242,11 +306,26 @@ async function main(argv) {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const file = fileArg >= 0 ? argv[fileArg + 1] : path.join(root, 'index.html');
   const baseline = args.has('--baseline');
-  let bank;
-  try { bank = loadBank(file); } catch (e) { console.error('Nie udało się wczytać bazy: ' + e.message); return 2; }
+  let full;
+  try { full = loadBank(file); } catch (e) { console.error('Nie udało się wczytać bazy: ' + e.message); return 2; }
+  // --baseline liczy wyłącznie pytania z v1 (status „stare”), żeby po dopisaniu partii nadal sprawdzał liczby kontrolne.
+  const bank = baseline ? full.filter(q => statusOf(q) === 'stare') : full;
   const r = analyze(bank, { baseline });
   console.log(formatReport(bank, r, { baseline }));
   let code = r.errors.length ? 1 : 0;
+  if (!baseline) {
+    const by = {};
+    full.forEach(q => { by[statusOf(q)] = (by[statusOf(q)] || 0) + 1; });
+    console.log('\nStatusy: ' + Object.entries(by).map(([s, n]) => `${s} ${n}`).join(' / '));
+    const nowe = full.filter(q => statusOf(q) === 'nowe');
+    const schema = nowe.flatMap(validateV2Record);
+    if (schema.length) { console.log('BŁĘDY SCHEMATU (nowe):\n' + schema.map(x => '  ✗ ' + x).join('\n')); code = 1; }
+    if (nowe.length) {
+      const g = gateNew(nowe);
+      console.log(formatGate(g));
+      if (args.has('--gate') && !g.ok) code = 1;
+    }
+  }
   if (baseline) {
     const rows = checkBaseline(bank, r);
     console.log('\nPORÓWNANIE Z LICZBAMI KONTROLNYMI (sekcja 2 zlecenia):');

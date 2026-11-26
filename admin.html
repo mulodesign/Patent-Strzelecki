@@ -25,7 +25,7 @@
 <div class="metric"><div class="name">Rozpoczęte testy</div><div id="started" class="value">—</div><div class="sub">Zdarzenia rozpoczęcia</div></div>
 <div class="metric"><div class="name">Ukończone testy</div><div id="completed" class="value">—</div><div class="sub">Zarejestrowane zakończenia</div></div>
 <div class="metric"><div class="name">Średni wynik</div><div id="average" class="value">—</div><div class="sub">Tylko ukończone testy</div></div>
-<div class="metric"><div class="name">Zdane symulacje PZSS</div><div id="passed" class="value">—</div><div class="sub">Spośród ukończonych</div></div>
+<div class="metric"><div class="name">Zdane testy kontrolne</div><div id="passed" class="value">—</div><div class="sub">Spośród ukończonych</div></div>
 </div>
 <div class="two section"><section class="card"><h3>Odwiedziny — ostatnie 30 dni</h3><div id="chart" class="chart" role="img" aria-label="Wykres odwiedzin kursu z ostatnich 30 dni"></div><div class="axis"><span id="date-start">—</span><span id="date-end">—</span></div></section><section class="card"><h3>W skrócie</h3><div class="list" id="summary"></div></section></div>
 <div class="two section"><section class="card"><h3>Tryby egzaminu</h3><div class="list" id="modes"></div></section><section class="card"><h3>Najczęściej błędne pytania</h3><div class="list" id="wrong"></div></section></div>
@@ -43,7 +43,7 @@ $('visits').textContent=nf(d.visits);$('users').textContent=nf(d.unique_users);$
 $('updated').textContent='Aktualizacja: '+new Date(d.generated_at).toLocaleString('pl-PL',{timeZone:'Europe/Warsaw',dateStyle:'medium',timeStyle:'short'});
 const daily=d.daily||[],peak=Math.max(1,...daily.map(x=>x.visits));const chart=$('chart');chart.replaceChildren();daily.forEach(x=>{const barBox=document.createElement('div');barBox.className='barbox';barBox.title=x.date+': '+x.visits+' odwiedzin';const bar=document.createElement('div');bar.className='bar';bar.style.height=(x.visits?Math.max(3,100*x.visits/peak):1)+'%';barBox.appendChild(bar);chart.appendChild(barBox)});$('date-start').textContent=daily[0]?.date||'—';$('date-end').textContent=daily[daily.length-1]?.date||'—';
 populate('summary',[['Użytkownicy dziś',nf(d.today.users)],['Użytkownicy 7 dni',nf(d.week.users)],['Odwiedziny 30 dni',nf(d.month.visits)],['Użytkownicy 30 dni',nf(d.month.users)],['Sesje łącznie',nf(d.sessions)],['Zarejestrowane zdarzenia',nf(d.total_events)]]);
-populate('modes',[['Trening — ukończone',nf(d.tests.training_completed)],['Symulacja PZSS — ukończone',nf(d.tests.pzss_completed)],['Symulacja PZSS — zdane',nf(d.tests.pzss_passed)],['Średnia PZSS',d.tests.pzss_avg===null?'—':d.tests.pzss_avg+'%']]);
+populate('modes',[['Trening — ukończone',nf(d.tests.training_completed)],['Test kontrolny — ukończone',nf(d.tests.pzss_completed)],['Test kontrolny — zdane',nf(d.tests.pzss_passed)],['Średnia (test kontrolny)',d.tests.pzss_avg===null?'—':d.tests.pzss_avg+'%']]);
 const wrong=(d.wrong_questions||[]).map(x=>['Pytanie nr '+(x.id+1),x.count+' błędnych odpowiedzi']);if(!wrong.length)wrong.push(['Brak danych','—']);populate('wrong',wrong);
 if(d.partial)$('updated').textContent+=' · Uwaga: ograniczenie do ostatnich 10 tys. zdarzeń';
 }
