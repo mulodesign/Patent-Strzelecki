@@ -29,22 +29,28 @@ for (const [mode, per] of [['pzss', 2], ['training', 4]]) {
     }
   });
 
-  test(`${mode}: 1000 losowań – Prawo tylko z puli „nowe”, Bezpieczeństwo/Regulaminy/Budowa tylko „stare”`, () => {
+  test(`${mode}: 1000 losowań – w każdym dziale najpierw „nowe” (tyle, ile pozwalają różne stem/topic), potem „stare”`, () => {
+    // liczba rozłącznych grup pytań „nowe” w dziale (wspólny topic lub stem = ta sama grupa) → maksimum „nowych” w jednym teście
+    const nowe = app.run(`BANK.filter(q=>statusOf(q)==='nowe').map(q=>({id:q.id,cat:q.cat,topic:q.topic||null,stem:q.stem}))`);
+    const groups = {};
+    for (const cat of KEYS) {
+      const qs = nowe.filter(q => q.cat === cat), parent = qs.map((_, i) => i);
+      const find = i => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+      qs.forEach((a, i) => qs.forEach((b, j) => { if (j > i && ((a.topic && a.topic === b.topic) || (a.stem != null && a.stem === b.stem))) parent[find(i)] = find(j); }));
+      groups[cat] = new Set(qs.map((_, i) => find(i))).size;
+    }
     let use = {};
-    const pkNowe = new Map();
+    const got = Object.fromEntries(KEYS.map(c => [c, 0]));
     for (let n = 0; n < 1000; n++) {
       const r = app.run(`pickExam(${JSON.stringify(mode)},${JSON.stringify(use)})`);
       const qs = checkDraw(r.ids, per);
       use = r.use;
-      for (const q of qs) {
-        if (q.cat === 'Prawo') assert.equal(q.status, 'nowe', `Prawo ze „stare”: ${q.id}`);
-        if (['Bezpieczeństwo', 'Regulaminy', 'Budowa broni'].includes(q.cat)) assert.equal(q.status, 'stare');
-        if (q.cat === 'Prawo karne') pkNowe.set(q.status, (pkNowe.get(q.status) || 0) + 1);
-      }
+      for (const q of qs) if (q.status === 'nowe') got[q.cat]++;
     }
-    // Prawo karne: liczba „nowe” w dziale wg puli (po batch-01: 3 pytania o różnych topic) – zawsze min(per, pula nowych)
-    const pkPool = app.run(`byCat('Prawo karne').filter(q=>statusOf(q)==='nowe').length`);
-    assert.equal(pkNowe.get('nowe'), 1000 * Math.min(per, pkPool), 'Prawo karne: nowe pytania mają pierwszeństwo');
+    for (const cat of KEYS) assert.equal(got[cat], 1000 * Math.min(per, groups[cat]), `${cat}: nowych ${got[cat]}, oczekiwano ${1000 * Math.min(per, groups[cat])} (grup: ${groups[cat]})`);
+    // po wczytaniu batch-01..03: Prawo, Bezpieczeństwo, Regulaminy – tylko „nowe”; Budowa broni – tylko „stare”
+    assert.equal(groups['Budowa broni'], 0);
+    for (const cat of ['Prawo', 'Bezpieczeństwo', 'Regulaminy']) assert.ok(groups[cat] >= per, cat);
   });
 
   test(`${mode}: w pierwszym cyklu każdej grupy (dział + status) pytania się nie powtarzają – 100 niezależnych startów`, () => {
@@ -79,8 +85,8 @@ test('ACTIVE_STATUSES = [\'stare\'] wyłącza nowe pytania (gotowość na Etap C
   }
   assert.equal(a.run('activeIx().length'), 235);
   a.run(`ACTIVE_STATUSES.splice(0,ACTIVE_STATUSES.length,'nowe')`);
-  assert.equal(a.run('activeIx().length'), 35);
-  assert.equal(a.run(`byCat('Bezpieczeństwo').length`), 0);
+  assert.equal(a.run('activeIx().length'), a.run(`BANK.filter(q=>q.status==='nowe').length`));
+  assert.equal(a.run(`byCat('Budowa broni').length`), 0);
 });
 
 test('dane syntetyczne ze stem: nigdy dwa pytania z tym samym stem w jednym teście', () => {
@@ -118,5 +124,7 @@ test('beginExam zapisuje examUsed po id i test w toku', () => {
 test('kolejność BANK: 235 pytań z v1 na swoich indeksach, nowe na końcu (analityka wysyła indeksy)', () => {
   const ids = app.run('BANK.map(q=>q.id)');
   ids.slice(0, 235).forEach((id, i) => assert.equal(id, 'Q' + String(i + 1).padStart(4, '0')));
-  assert.ok(ids.slice(235).every(id => /^B01-\d{3}$/.test(id)));
+  assert.ok(ids.slice(235).every(id => /^B0\d-\d{3}$/.test(id)));
+  // partie w kolejności wczytania
+  assert.deepEqual([...new Set(ids.slice(235).map(id => id.slice(0, 3)))], ['B01', 'B02', 'B03']);
 });

@@ -1,0 +1,187 @@
+{
+ "_opis": "Mapowanie id -> numer hasła wykazu PZSS. Zgodnie z decyzją czatu 26.11.2026 wpisywane tylko przy pewności wysokiej; pozostałe null. Pytania ISSF wymagają przeglądu osoby znającej przepisy (Etap C). Szczegóły: OD_CLAUDE/pifpaf/mapowanie_batch-02-03.md",
+ "B03-001": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-002": {
+  "stem": 103,
+  "pewnosc": "wysoka"
+ },
+ "B03-003": {
+  "stem": 106,
+  "pewnosc": "wysoka"
+ },
+ "B03-004": {
+  "stem": 105,
+  "pewnosc": "wysoka"
+ },
+ "B03-005": {
+  "stem": 101,
+  "pewnosc": "wysoka"
+ },
+ "B03-006": {
+  "stem": 104,
+  "pewnosc": "wysoka"
+ },
+ "B03-007": {
+  "stem": 98,
+  "pewnosc": "wysoka"
+ },
+ "B03-008": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-009": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-010": {
+  "stem": 108,
+  "pewnosc": "wysoka"
+ },
+ "B03-011": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-012": {
+  "stem": 92,
+  "pewnosc": "wysoka"
+ },
+ "B03-013": {
+  "stem": 94,
+  "pewnosc": "wysoka"
+ },
+ "B03-014": {
+  "stem": 90,
+  "pewnosc": "wysoka"
+ },
+ "B03-015": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-016": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-017": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-018": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-019": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-020": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-021": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-022": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-023": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-024": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-025": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-026": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-027": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-028": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-029": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-030": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-031": {
+  "stem": 113,
+  "pewnosc": "wysoka"
+ },
+ "B03-032": {
+  "stem": 121,
+  "pewnosc": "wysoka"
+ },
+ "B03-033": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-034": {
+  "stem": 99,
+  "pewnosc": "wysoka"
+ },
+ "B03-035": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-036": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-037": {
+  "stem": 91,
+  "pewnosc": "wysoka"
+ },
+ "B03-038": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-039": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-040": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-041": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-042": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-043": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-044": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-045": {
+  "stem": null,
+  "pewnosc": "niska"
+ },
+ "B03-046": {
+  "stem": 114,
+  "pewnosc": "wysoka"
+ }
+}
